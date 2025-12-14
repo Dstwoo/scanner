@@ -4,40 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Scanner Ambulancier</title>
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS pour le style (via CDN pour un fichier unique) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { overscroll-behavior-y: contain; }
+        /* Styles personnalisés pour l'expérience mobile */
+        body {
+            overscroll-behavior-y: contain; /* Empêche le "pull-to-refresh" accidentel */
+        }
         .camera-feed {
             object-fit: cover;
             width: 100%;
             height: 300px;
             background-color: #000;
-            transform: scaleX(1);
+            transform: scaleX(1); /* Miroir désactivé pour documents */
         }
-        .flash-animation { animation: flash 0.3s; }
+        /* Effet de flash lors de la capture */
+        .flash-animation {
+            animation: flash 0.3s;
+        }
         @keyframes flash {
             0% { opacity: 1; }
             50% { opacity: 0.5; background-color: white; }
             100% { opacity: 1; }
         }
-        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        /* Animation du badge compteur */
+        .pop-in {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
         @keyframes popIn {
             0% { transform: scale(0); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        /* Loader Spinner */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen pb-20 font-sans">
@@ -47,32 +46,21 @@
         <div class="flex items-center justify-between max-w-md mx-auto">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <i data-lucide="ambulance" class="w-6 h-6"></i>
-                Ambu-Scan Direct
+                Ambu-Scan
             </h1>
-            <span class="text-xs bg-blue-600 px-2 py-1 rounded">v2.0</span>
+            <span class="text-xs bg-blue-600 px-2 py-1 rounded">v1.5</span>
         </div>
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-6">
 
-        <!-- Section 0: Configuration Destinataire -->
-        <section class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                <i data-lucide="mail" class="w-5 h-5 text-blue-600"></i>
-                Destinataire
-            </h2>
-            <div>
-                <label class="block text-sm font-medium text-slate-600 mb-1">Email du Secrétariat</label>
-                <input type="email" id="emailDest" value="dstwo2005@gmail.com" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-400">
-                <p class="text-xs text-slate-400 mt-1">L'envoi se fera directement à cette adresse.</p>
-            </div>
-        </section>
+        <!-- Section Destinataire supprimée -->
 
         <!-- Section 1: Informations Patient -->
         <section class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
             <h2 class="text-lg font-semibold text-slate-700 mb-3 flex items-center gap-2">
                 <i data-lucide="user" class="w-5 h-5 text-blue-600"></i>
-                Informations Patient
+                Informations Patient (Facultatif)
             </h2>
             
             <div class="space-y-3">
@@ -98,7 +86,7 @@
         <section class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
             <h2 class="text-lg font-semibold text-slate-700 mb-3 flex items-center gap-2">
                 <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
-                Documents
+                Documents à envoyer
             </h2>
             <div class="grid grid-cols-2 gap-3">
                 <label class="flex items-center space-x-2 bg-slate-50 p-2 rounded border cursor-pointer hover:bg-blue-50 transition">
@@ -120,27 +108,41 @@
             </div>
         </section>
 
-        <!-- Section 3: Caméra -->
+        <!-- Section 3: Caméra et Capture -->
         <section class="bg-white p-2 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="relative bg-black rounded-lg overflow-hidden" id="cameraContainer">
+                <!-- Zone vidéo -->
                 <video id="videoFeed" autoplay playsinline class="camera-feed"></video>
+                
+                <!-- Overlay "Viseur" pour aider au cadrage -->
                 <div class="absolute inset-0 border-2 border-white/30 m-4 pointer-events-none rounded-lg flex items-center justify-center">
                     <div class="text-white/50 text-xs bg-black/50 px-2 py-1 rounded">Aligner le document</div>
                 </div>
+
+                <!-- Compteur visuel sur la caméra -->
                 <div id="cameraCounter" class="absolute top-4 right-4 bg-white/90 text-blue-800 px-3 py-1.5 rounded-full text-sm font-bold shadow-lg hidden flex items-center gap-2 pop-in z-30">
                     <i data-lucide="images" class="w-4 h-4"></i>
                     <span id="cameraCounterText">0</span>
                 </div>
+
+                <!-- Boutons Caméra -->
                 <div class="absolute bottom-4 w-full flex justify-center items-center gap-6">
+                    <!-- Bouton Activer Caméra (visible si inactive) -->
                     <button id="btnStartCam" class="absolute z-20 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg font-bold flex items-center gap-2">
                         <i data-lucide="camera"></i> Activer Caméra
                     </button>
+
+                    <!-- Bouton Capture (visible si active) -->
                     <button id="btnCapture" class="hidden z-20 w-16 h-16 bg-white rounded-full border-4 border-slate-300 shadow-lg active:scale-95 transition flex items-center justify-center">
                         <div class="w-12 h-12 bg-red-500 rounded-full"></div>
                     </button>
                 </div>
             </div>
+
+            <!-- Canvas caché pour le traitement de l'image -->
             <canvas id="canvas" class="hidden"></canvas>
+            
+            <!-- Option Contraste -->
             <div class="flex justify-between items-center p-2 mt-1">
                 <span class="text-xs text-slate-500">Mode Document</span>
                 <button id="toggleContrast" class="text-xs flex items-center gap-1 bg-slate-100 px-2 py-1 rounded border">
@@ -149,30 +151,32 @@
             </div>
         </section>
 
-        <!-- Section 4: Galerie -->
+        <!-- Section 4: Galerie des scans -->
         <section id="gallerySection" class="hidden">
             <h3 class="text-sm font-bold text-slate-500 mb-2 uppercase tracking-wide">Documents scannés</h3>
-            <div id="galleryGrid" class="grid grid-cols-3 gap-2"></div>
+            <div id="galleryGrid" class="grid grid-cols-3 gap-2">
+                <!-- Les miniatures seront injectées ici -->
+            </div>
         </section>
 
         <!-- Bouton d'action final -->
         <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-slate-200 shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
-            <div class="max-w-md mx-auto space-y-2">
+            <div class="max-w-md mx-auto">
                 <button id="btnSend" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-3 text-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
-                    <div id="btnContent" class="flex items-center gap-2">
+                    <div class="flex items-center gap-2">
                         <i data-lucide="send"></i>
-                        <span>Envoyer Directement</span>
+                        <span>Préparer l'envoi</span>
                     </div>
-                    <div id="btnLoader" class="loader hidden"></div>
+                    <!-- Badge compteur sur le bouton envoyer -->
                     <span id="sendBadge" class="hidden bg-white text-green-700 px-2 py-0.5 rounded-full text-sm font-extrabold shadow-sm">0</span>
                 </button>
-                
-                <!-- Status Message -->
-                <div id="statusMsg" class="hidden p-3 rounded-lg text-sm text-center"></div>
+                <div id="errorMsg" class="text-red-500 text-xs text-center mt-2 hidden"></div>
             </div>
         </div>
 
     </main>
+    
+    <!-- Espace vide pour ne pas cacher le contenu derrière le footer fixe -->
     <div class="h-24"></div>
 
     <script>
@@ -182,38 +186,56 @@
         const btnStartCam = document.getElementById('btnStartCam');
         const btnCapture = document.getElementById('btnCapture');
         const btnSend = document.getElementById('btnSend');
-        const btnContent = document.getElementById('btnContent');
-        const btnLoader = document.getElementById('btnLoader');
         const galleryGrid = document.getElementById('galleryGrid');
         const gallerySection = document.getElementById('gallerySection');
-        const statusMsg = document.getElementById('statusMsg');
+        const errorMsg = document.getElementById('errorMsg');
         const btnToggleContrast = document.getElementById('toggleContrast');
+        
+        // Nouveaux éléments visuels
         const cameraCounter = document.getElementById('cameraCounter');
         const cameraCounterText = document.getElementById('cameraCounterText');
         const sendBadge = document.getElementById('sendBadge');
 
-        // --- État ---
-        let capturedFiles = []; 
+        // --- État de l'application ---
+        let capturedFiles = []; // Stocke les objets File
         let stream = null;
         let highContrastMode = false;
 
+        // --- Initialisation des icônes ---
         lucide.createIcons();
 
-        // --- Caméra ---
+        // --- Gestion de la Caméra ---
         async function startCamera() {
             try {
-                const constraints = { video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
+                // Contraintes: Caméra arrière préférée
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: "environment" },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                };
+
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
+                
+                // UI updates
                 btnStartCam.classList.add('hidden');
                 btnCapture.classList.remove('hidden');
+                video.style.opacity = "1";
+                errorMsg.classList.add('hidden');
+
             } catch (err) {
-                alert("Erreur accès caméra (HTTPS requis).");
+                console.error("Erreur caméra:", err);
+                alert("Impossible d'accéder à la caméra. Vérifiez les permissions et assurez-vous d'être en HTTPS.");
+                errorMsg.textContent = "Erreur: Accès caméra refusé.";
+                errorMsg.classList.remove('hidden');
             }
         }
+
         btnStartCam.addEventListener('click', startCamera);
 
-        // --- Contraste ---
+        // --- Gestion du Contraste (CSS Visual + Canvas processing) ---
         btnToggleContrast.addEventListener('click', () => {
             highContrastMode = !highContrastMode;
             if(highContrastMode) {
@@ -225,29 +247,40 @@
             }
         });
 
-        // --- Capture ---
+        // --- Capture Photo ---
         btnCapture.addEventListener('click', () => {
             if (!stream) return;
+
+            // Feedback visuel (flash)
             video.parentElement.classList.add('flash-animation');
             setTimeout(() => video.parentElement.classList.remove('flash-animation'), 300);
 
+            // Dimensionner le canvas selon la vidéo réelle
             const width = video.videoWidth;
             const height = video.videoHeight;
             canvas.width = width;
             canvas.height = height;
-            const ctx = canvas.getContext('2d');
             
-            if(highContrastMode) ctx.filter = "grayscale(100%) contrast(150%)";
+            const ctx = canvas.getContext('2d');
+
+            // Appliquer les filtres si mode contraste activé
+            if(highContrastMode) {
+                ctx.filter = "grayscale(100%) contrast(150%)";
+            }
+
+            // Dessiner l'image
             ctx.drawImage(video, 0, 0, width, height);
 
-            // Compression JPEG 0.7 pour réduire le poids (important pour l'upload)
+            // Convertir en Blob/Fichier
             canvas.toBlob((blob) => {
                 const fileName = `scan_${Date.now()}.jpg`;
                 const file = new File([blob], fileName, { type: "image/jpeg" });
+                
                 addFileToGallery(file);
-            }, 'image/jpeg', 0.7); 
+            }, 'image/jpeg', 0.85); // Qualité JPEG 85%
         });
 
+        // --- Gestion de la Galerie ---
         function addFileToGallery(file) {
             capturedFiles.push(file);
             updateGalleryUI();
@@ -257,132 +290,111 @@
         function removeFile(index) {
             capturedFiles.splice(index, 1);
             updateGalleryUI();
-            if (capturedFiles.length === 0) gallerySection.classList.add('hidden');
+            if (capturedFiles.length === 0) {
+                gallerySection.classList.add('hidden');
+            }
         }
 
         function updateGalleryUI() {
             galleryGrid.innerHTML = '';
+            
+            // Mise à jour des compteurs visuels
             const count = capturedFiles.length;
             
+            // Compteur Caméra
             cameraCounterText.textContent = count;
-            cameraCounter.classList.toggle('hidden', count === 0);
-            if(count > 0) {
-                 cameraCounter.classList.remove('pop-in');
-                 void cameraCounter.offsetWidth;
-                 cameraCounter.classList.add('pop-in');
+            if (count > 0) {
+                cameraCounter.classList.remove('hidden');
+                // Replay animation
+                cameraCounter.classList.remove('pop-in');
+                void cameraCounter.offsetWidth; // trigger reflow
+                cameraCounter.classList.add('pop-in');
+            } else {
+                cameraCounter.classList.add('hidden');
             }
 
+            // Badge Bouton Envoyer
             sendBadge.textContent = count;
-            sendBadge.classList.toggle('hidden', count === 0);
+            if (count > 0) {
+                sendBadge.classList.remove('hidden');
+            } else {
+                sendBadge.classList.add('hidden');
+            }
 
             capturedFiles.forEach((file, index) => {
                 const url = URL.createObjectURL(file);
+                
                 const div = document.createElement('div');
                 div.className = "relative group aspect-[3/4] bg-slate-200 rounded-lg overflow-hidden border border-slate-300";
+                
                 div.innerHTML = `
                     <img src="${url}" class="w-full h-full object-cover">
                     <button onclick="removeFile(${index})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                     </button>
+                    <div class="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] p-1 text-center truncate">
+                        Scan ${index + 1}
+                    </div>
                 `;
                 galleryGrid.appendChild(div);
             });
         }
 
-        // --- ENVOI DIRECT (VIA FORMSUBMIT) ---
+        // --- Envoi E-mail (Logique critique) ---
         btnSend.addEventListener('click', async () => {
-            const emailDest = document.getElementById('emailDest').value.trim();
+            // 1. Validation des champs
+            // Plus d'email à vérifier ici
             const nom = document.getElementById('nom').value.trim();
             const prenom = document.getElementById('prenom').value.trim();
-            const dob = document.getElementById('dob').value;
             
+            // Récupérer les types de documents cochés
             const docTypes = Array.from(document.querySelectorAll('input[name="doctype"]:checked'))
-                .map(cb => cb.value).join(', ');
+                .map(cb => cb.value)
+                .join(', ');
 
-            if (!emailDest || !nom || !prenom) {
-                alert("Veuillez remplir l'email, le nom et le prénom.");
-                return;
+            // Validation supprimée à la demande de l'utilisateur
+            // Les champs peuvent être vides désormais
+
+            if (capturedFiles.length === 0) {
+                if(!confirm("Aucun document scanné. Voulez-vous envoyer l'e-mail sans pièce jointe ?")) return;
             }
 
-            // UI: Loading state
-            btnSend.disabled = true;
-            btnContent.classList.add('hidden');
-            btnLoader.classList.remove('hidden');
-            statusMsg.className = "p-3 rounded-lg text-sm text-center bg-blue-100 text-blue-700";
-            statusMsg.textContent = "Téléchargement des images en cours... Veuillez patienter.";
-            statusMsg.classList.remove('hidden');
+            // 2. Préparation des données
+            // Si nom/prénom vide, on met un placeholder ou chaine vide
+            const nomDisplay = nom || "Inconnu";
+            const prenomDisplay = prenom || "";
 
-            try {
-                // 1. Préparer le formulaire
-                const formData = new FormData();
-                // Champs requis par FormSubmit
-                formData.append('_subject', `[SCAN] ${nom} ${prenom} - ${docTypes}`);
-                formData.append('_template', 'table'); // Joli format
-                formData.append('_captcha', 'false');  // Tente de désactiver le captcha
-                
-                // Champs de données
-                formData.append('Patient', `${nom} ${prenom}`);
-                formData.append('Date Naissance', dob);
-                formData.append('Documents', docTypes);
-                
-                // Pièces jointes
-                capturedFiles.forEach((file, index) => {
-                    formData.append(`Fichier ${index+1}`, file);
-                });
+            const subject = `[SCAN] Patient ${nomDisplay} ${prenomDisplay} - ${docTypes || 'Documents'}`;
+            const body = `Bonjour,\n\nVeuillez trouver ci-joint les documents pour le patient :\n\n- Patient : ${nom} ${prenom}\n- Né(e) le : ${document.getElementById('dob').value}\n- Documents : ${docTypes}\n\nCordialement,\nL'équipe Ambulancière.`;
 
-                // 2. Envoi AJAX
-                // Note: Utilisation de l'URL spécifique pour recevoir du JSON
-                const response = await fetch(`https://formsubmit.co/ajax/${emailDest}`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    // SUCCÈS
-                    statusMsg.className = "p-3 rounded-lg text-sm text-center bg-green-100 text-green-700";
-                    statusMsg.textContent = "✅ Documents envoyés avec succès au secrétariat !";
-                    
-                    // Reset après 3 secondes
-                    setTimeout(() => {
-                        window.location.reload(); // Recharger pour nouveau patient
-                    }, 3000);
-                } else {
-                    throw new Error(result.message || "Erreur serveur");
+            // 3. Tentative d'utilisation de l'API Web Share
+            if (navigator.share && navigator.canShare && capturedFiles.length > 0 && navigator.canShare({ files: capturedFiles })) {
+                try {
+                    await navigator.share({
+                        title: subject,
+                        text: body,
+                        files: capturedFiles
+                    });
+                    console.log('Partage réussi');
+                } catch (err) {
+                    console.log('Erreur partage ou annulation:', err);
                 }
-
-            } catch (error) {
-                console.error(error);
-                statusMsg.className = "p-3 rounded-lg text-sm text-center bg-red-100 text-red-700";
-                statusMsg.innerHTML = `⚠️ Échec de l'envoi direct.<br>Vérifiez votre connexion.<br><a href="#" id="fallbackMail" class="underline font-bold">Cliquez ici pour utiliser l'app Mail classique</a>`;
+            } else {
+                // 4. Fallback: mailto (Sans destinataire)
+                alert("Votre navigateur ne supporte pas l'ajout automatique des pièces jointes.\n\nL'application Mail va s'ouvrir. Veuillez :\n1. Saisir l'adresse du destinataire\n2. Joindre manuellement les photos téléchargées.");
                 
-                // Fallback manuel si l'upload échoue
-                document.getElementById('fallbackMail').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    sendViaMailApp(emailDest, nom, prenom, dob, docTypes);
+                capturedFiles.forEach(file => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(file);
+                    a.download = file.name;
+                    a.click();
                 });
-                
-                btnSend.disabled = false;
-                btnContent.classList.remove('hidden');
-                btnLoader.classList.add('hidden');
+
+                // Pas de destinataire spécifié, juste le sujet et le corps
+                const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.location.href = mailtoLink;
             }
         });
-
-        function sendViaMailApp(email, nom, prenom, dob, docTypes) {
-            const subject = `[SCAN] ${nom} ${prenom}`;
-            const body = `Patient: ${nom} ${prenom}\nNé(e): ${dob}\nDocs: ${docTypes}`;
-            
-            // Sauvegarde manuelle
-            capturedFiles.forEach(file => {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(file);
-                a.download = file.name;
-                a.click();
-            });
-
-            window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        }
 
     </script>
 </body>
